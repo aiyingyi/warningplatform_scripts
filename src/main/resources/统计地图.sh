@@ -25,7 +25,7 @@ med_risk as
 low_risk as
 (select province,total from warning where risk_level = '3')
 
-insert into table province_warning_statistic_es
+insert into table ${db}.province_warning_statistic_es
 select
   high_risk.province,
   high_risk.total,
