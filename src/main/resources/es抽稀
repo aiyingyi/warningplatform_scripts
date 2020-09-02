@@ -1,0 +1,27 @@
+GET  test/test/_search
+{
+  "from": 0,
+  "size": 2,
+  "query": {
+    "constant_score": {
+      "filter": {
+        "range": {
+          "ms": {
+            "gt": "2020-08-15 10:10:10",
+            "lt": "2020-08-15 12:11:10"
+          }
+        }
+      }
+    }
+  },
+   "_source": {
+    "includes": []
+  },
+  "sort": {
+    "_script": {
+      "script": "Math.random()",
+      "type": "number",
+      "order": "asc"
+    }
+  }
+}
