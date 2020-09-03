@@ -1,27 +1,35 @@
 GET  test/test/_search
 {
-  "from": 0,
-  "size": 2,
   "query": {
-    "constant_score": {
-      "filter": {
-        "range": {
-          "ms": {
-            "gt": "2020-08-15 10:10:10",
-            "lt": "2020-08-15 12:11:10"
-          }
-        }
+      "bool": {
+          "must": [{
+              "range": {
+                  "date_time": {                    # 设置数据时间范围
+                      "gte": "2020-09-03 00:00:00",
+                      "lte": "2020-09-04 00:00:00"
+                  }
+              }
+          }]
       }
-    }
   },
-   "_source": {
-    "includes": []
-  },
-  "sort": {
-    "_script": {
-      "script": "Math.random()",
-      "type": "number",
-      "order": "asc"
+  "size": 0,                # 不显示聚合使用的明细数据
+  "aggs": {
+      "group_by_interval": {
+        "date_histogram": {
+          "field": "date_time",
+          "interval": "1h",
+          "format": "yyyy-MM-dd HH:mm:ss"
+          },
+      "aggs": {
+          "select_first": {
+            "top_hits": {
+              "sort": [{
+                "date_time": {"order": "asc"}
+              }],
+              "size": 1
+            }
+       }
+     }
     }
   }
 }

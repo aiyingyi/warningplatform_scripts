@@ -38,6 +38,7 @@ create external table battery_warning_info_es
 (
     vin string,
     vehicle_type string,
+    enterprise string,
     license_plate string,
     battery_type string,
     risk_level string,
@@ -58,32 +59,40 @@ create external table battery_warning_info_es
 
 -- 创建预警信息表，每小时从es中拉取一次数据，不用分区，直接覆盖掉即可,拉取上一个小时的数据
 
-create external table battery_warning_info
+create external table battery_warning_info_perhour
 (
     vin          string,
-    warning_type string comment '预警类型',
+    vehicle_type string,
+    enterprise   String,
     province     string,
+    warning_type string comment '预警类型',
     dt           string
 ) row format delimited fields terminated by '\t'
-    location '/warningplatform.db/dwt/battery_warning_info';
+    location '/warningplatform.db/dwt/battery_warning_info_perhour';
 
 -- 创建预警信息统计表，按照小时进行统计，按照时间分区
-create external table warning_info_statistic
+create external table warning_info_statistic_perhour
 (
+    vin          string,
+    vehicle_type string,
+    enterprise   String,
     province     string,
     warning_type string comment '预警类型',
     total        bigint comment '故障次数',
     dt           string comment '本次统计范围的开始整点'
 ) partitioned by (year string,month string,day string)
     row format delimited fields terminated by '\t'
-    location '/warningplatform.db/ads/warning_info_statistic';
+    location '/warningplatform.db/ads/warning_info_statistic_perhour';
 
 
--- 创建预警统计信息表与es每小时统计表的映射表  
+-- 创建预警统计信息表与es每小时统计表的映射表
 -- 注意添加hive写入es的两个jar包
 
 CREATE EXTERNAL TABLE warning_info_statistic_es_perhour
 (
+    vin          string,
+    vehicle_type string,
+    enterprise   String,
     province     string,
     warning_type string comment '预警类型',
     total        bigint comment '故障次数',
@@ -97,21 +106,28 @@ CREATE EXTERNAL TABLE warning_info_statistic_es_perhour
         );
 
 
--- 创建预警统计信息表与es每周统计表的映射表
+-- 创建预警统计信息表与es每天统计表的映射表
 
-CREATE EXTERNAL TABLE warning_info_statistic_es_perweek
+CREATE EXTERNAL TABLE warning_info_statistic_es_perday
 (
+    vin          string,
+    vehicle_type string,
+    enterprise   String,
     province     string,
     warning_type string comment '预警类型',
     total        bigint comment '故障次数',
-    dt           string comment '统计范围所在周的周一日期'
+    dt           string comment '统计数据的日期'
 )
     STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
-    TBLPROPERTIES ('es.resource' = 'warninginfo_statistic_perweek/warninginfo_statistic_perweek',
+    TBLPROPERTIES ('es.resource' = 'warninginfo_statistic_perday/warninginfo_statistic_perday',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200',
         'es.index.auto.create' = 'TRUE'
         );
+
+
+
+
 
 
 
