@@ -1,51 +1,48 @@
 #!/bin/bash
 
 db=warningplatform
+# 获取前6小时时间，有可能跨天
+do_date=`date  "+%Y-%m-%d %H:%M:%S"`
+start_time=`date -d "6 hour ago  ${do_date}" "+%Y-%m-%d %H:%M:%S"`
 
-# 获取当前时间
-do_date=`date "+%Y-%m-%d %H:%M:%S"`
-
-# 获取前一天的数据进行聚合
-# dt为数据日期
 sql="
+
 with
-warning_day as
-  (
-    select
-      vin,
+warning as
+(select
       province,
-      warning_type,
-      sum(total) total
-    from ${db}.warning_info_statistic_perhour
-    where year = date_format(date_add('${do_date}',-1),'yyyy')
-    and  month = date_format(date_add('${do_date}',-1),'MM')
-    and   day  = date_format(date_add('${do_date}',-1),'dd')
-    group by vin,province,warning_type
-  ),
-type_enterprise as
-  (
-    select
-        vin,
-        vehicle_type,
-        enterprise
-    from  ${db}.warning_info_statistic_perhour
-    where year = date_format(date_add('${do_date}',-1),'yyyy')
-    and  month = date_format(date_add('${do_date}',-1),'MM')
-    and   day  = date_format(date_add('${do_date}',-1),'dd')
-    group by vin,vehicle_type,enterprise
-  )
+      risk_level,
+      count(*) total
+    from ${db}.battery_warning_info_es
+    where date_format(warning_start_time,'yyyy-MM-dd HH') >= date_format('${start_time}','yyyy-MM-dd HH')
+    and date_format(warning_start_time,'yyyy-MM-dd HH') < date_format('${do_date}','yyyy-MM-dd HH')
+    and (review_status = '1' or review_status = '2' or review_status = '3')
+    group by province,risk_level ),
+tmp as
+(select warning.*
+  from warning
+  distribute by warning.province
+  sort by warning.province,warning.risk_level),
 
-insert into table ${db}.warning_info_statistic_es_perday
+warning_level as
+(select
+    tmp.province,
+    case tmp.risk_level when '1' then tmp.total else 0 end r1,
+    case tmp.risk_level when '2' then tmp.total else 0 end r2,
+    case tmp.risk_level when '3' then tmp.total else 0 end r3
+from tmp
+)
+
+insert into table ${db}.province_warning_statistic_es
 select
-  warning_day.vin,
-  type_enterprise.vehicle_type,
-  type_enterprise.enterprise,
-  warning_day.province,
-  warning_day.warning_type,
-  warning_day.total,
-  date_format(date_add('${do_date}',-1),'yyyy-MM-dd') dt
-from warning_day join type_enterprise
-on warning_day.vin = type_enterprise.vin;
+  warning_level.province,
+  sum(warning_level.r1) r1,
+  sum(warning_level.r2) r2,
+  sum(warning_level.r3) r3,
+  0,
+  date_format('${start_time}','yyyy-MM-dd HH')
+from warning_level
+group by warning_level.province
 "
+hive -e  "${sql}"
 
-hive -e "${sql}"
