@@ -2,9 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c0837e7e-0f8c-46f0-80bb-9c75b090cb8e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/风险等级饼状图统计.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/Hive建表.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/Hive建表.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/a.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/a.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/统计地图.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/统计地图.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +104,7 @@
       <option name="presentableId" value="Default" />
       <updated>1598954379000</updated>
       <workItem from="1598954380638" duration="15441000" />
-      <workItem from="1599025853496" duration="42876000" />
+      <workItem from="1599025853496" duration="44889000" />
     </task>
     <task id="LOCAL-00001" summary="脚本">
       <created>1598954475049</created>
@@ -139,7 +141,14 @@
       <option name="project" value="LOCAL" />
       <updated>1599119905517</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="预警地图修改">
+      <created>1599134322924</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1599134322924</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,9 +159,14 @@
     <MESSAGE value="统计地图未完成" />
     <MESSAGE value="统计地图完成" />
     <MESSAGE value="预警统计指标修改" />
-    <option name="LAST_COMMIT_MESSAGE" value="预警统计指标修改" />
+    <MESSAGE value="预警地图修改" />
+    <option name="LAST_COMMIT_MESSAGE" value="预警地图修改" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="361" y="74" key="#Notifications" timestamp="1599134399660">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="361" y="74" key="#Notifications/0.0.1536.824@0.0.1536.824" timestamp="1599134399660" />
     <state x="361" y="74" key="#Project_Structure" timestamp="1598954422613">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -165,18 +179,18 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="480" y="221" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1536.824@0.0.1536.824" timestamp="1599038817389" />
-    <state x="385" y="6" key="CommitChangelistDialog2" timestamp="1599119904672">
+    <state x="385" y="6" key="CommitChangelistDialog2" timestamp="1599134321260">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="385" y="6" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1599119904672" />
+    <state x="385" y="6" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1599134321260" />
     <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1599099342132">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1599099342132" />
-    <state x="361" y="148" key="Vcs.Push.Dialog.v2" timestamp="1599119972492">
+    <state x="361" y="148" key="Vcs.Push.Dialog.v2" timestamp="1599134383183">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="361" y="148" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1599119972492" />
+    <state x="361" y="148" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1599134383183" />
     <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1599016310483">
       <screen x="0" y="0" width="1536" height="824" />
     </state>

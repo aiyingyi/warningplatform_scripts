@@ -1,12 +1,10 @@
 #!/bin/bash
 
 db=warningplatform
-# 获取前6小时时间，有可能跨天
+# 获取当前日期
 do_date=`date  "+%Y-%m-%d %H:%M:%S"`
-start_time=`date -d "6 hour ago  ${do_date}" "+%Y-%m-%d %H:%M:%S"`
 
 sql="
-
 with
 warning as
 (select
@@ -14,9 +12,7 @@ warning as
       risk_level,
       count(*) total
     from ${db}.battery_warning_info_es
-    where date_format(warning_start_time,'yyyy-MM-dd HH') >= date_format('${start_time}','yyyy-MM-dd HH')
-    and date_format(warning_start_time,'yyyy-MM-dd HH') < date_format('${do_date}','yyyy-MM-dd HH')
-    and (review_status = '1' or review_status = '2' or review_status = '3')
+    where review_status = '1' or review_status = '2' or review_status = '3'
     group by province,risk_level ),
 tmp as
 (select warning.*
@@ -40,7 +36,7 @@ select
   sum(warning_level.r2) r2,
   sum(warning_level.r3) r3,
   0,
-  date_format('${start_time}','yyyy-MM-dd HH')
+  date_format('${do_date}','yyyy-MM-dd HH')
 from warning_level
 group by warning_level.province
 "
