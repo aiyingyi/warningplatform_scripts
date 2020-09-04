@@ -36,7 +36,7 @@ select
   sum(warning_level.r2) r2,
   sum(warning_level.r3) r3,
   0,
-  date_format('${do_date}','yyyy-MM-dd HH')
+  date_format('${do_date}','yyyy-MM-dd HH:mm:ss')
 from warning_level
 group by warning_level.province
 "

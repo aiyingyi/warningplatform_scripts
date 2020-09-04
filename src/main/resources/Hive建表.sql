@@ -36,25 +36,25 @@ create external table warning_level
 -- 创建预警信息es映射表
 create external table battery_warning_info_es
 (
-    vin string,
-    vehicle_type string,
-    enterprise string,
-    license_plate string,
-    battery_type string,
-    risk_level string,
-    province  string,
+    vin                string,
+    vehicle_type       string,
+    enterprise         string,
+    license_plate      string,
+    battery_type       string,
+    risk_level         string,
+    province           string,
     warning_start_time string,
-    warning_end_time string,
-    warning_type string,
+    warning_end_time   string,
+    warning_type       string,
     lose_efficacy_type string,
-    review_status string,
-    review_result string,
-    review_user string
-)STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    review_status      string,
+    review_result      string,
+    review_user        string
+) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
     TBLPROPERTIES ('es.resource' = 'warning/warning',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200'
-    );
+        );
 
 
 -- 创建预警信息表，每小时从es中拉取一次数据，不用分区，直接覆盖掉即可,拉取上一个小时的数据
@@ -126,15 +126,14 @@ CREATE EXTERNAL TABLE warning_info_statistic_es_perday
         );
 
 
-
 -- 创建预警地图统计表，每隔6小时统计所有未审核的数据
 
 CREATE EXTERNAL TABLE province_warning_statistic_es
 (
     province     string,
     highrisk_num bigint comment '高风险未审核预警数量',
-    medrisk_num  bigint ,
-    lowrisk_num  bigint ,
+    medrisk_num  bigint,
+    lowrisk_num  bigint,
     safety_num   bigint,
     dt           string
 )
@@ -144,6 +143,23 @@ CREATE EXTERNAL TABLE province_warning_statistic_es
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200'
         );
+
+
+-- 创建风险等级统计表es映射表，每隔一小时统计所有未审核的数据
+CREATE EXTERNAL TABLE risk_level_statistic_es
+(
+    highrisk_num bigint,
+    medrisk_num  bigint,
+    lowrisk_num  bigint,
+    dt           string
+)
+    STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/risk_level_statistic_es'
+    TBLPROPERTIES ('es.resource' = 'risk_level_index/risk_level',
+        'es.nodes' = '192.168.11.29',
+        'es.port' = '9200'
+        );
+
 
 
 
