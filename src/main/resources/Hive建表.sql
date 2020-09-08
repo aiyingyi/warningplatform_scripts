@@ -163,9 +163,10 @@ CREATE EXTERNAL TABLE risk_level_statistic_es
 
 -- 创建预处理之后ods层数据帧原始数据表
 
-create external table ods_preprocess_vehicle_data(
+create external table ods_preprocess_vehicle_data
+(
     data string
-)partitioned by (year string,month string,day string)
+) partitioned by (year string,month string,day string)
     row format delimited fields terminated by '\t'
     location '/warningplatform.db/ods/ods_preprocess_vehicle_data';
 
@@ -173,53 +174,53 @@ create external table ods_preprocess_vehicle_data(
 
 create external table dwd_preprocess_vehicle_data
 (
-    vin string,
-    msgTime string,
-    speed double,
-    startupStatus string,
-    runMode string,
-    odo double,
-    gearStatus string,
-    chargeStatus string,
-    maxCellVoltageNum string,
-    maxCellVoltage double,
-    minCellVoltageNum string,
-    minCellVoltage double,
-    maxProbeTemperatureNum string,
-    maxProbeTemperature double,
-    minProbeTemperatureNum string,
-    minProbeTemperature double,
-    cellVoltage string comment 'double数组',
-    differenceCellVoltage double,
-    maxTemperatureRate double,
-    minTemperatureRate double,
-    atanMaxTemperatureRate double,
-    atanMinTemperatureRate double,
-    averageProbeTemperature double,
-    averageCellVoltage double,
-    varianceCellVoltage double,
-    varianceProbeTemperature double,
-    entropy double,
-    variation double,
-    wDifferenceCellVoltages string comment 'double数组',
-    wDifferenceTotalCellVoltage double,
+    vin                          string,
+    msgTime                      string,
+    speed                        double,
+    startupStatus                string,
+    runMode                      string,
+    odo                          double,
+    gearStatus                   string,
+    chargeStatus                 string,
+    maxCellVoltageNum            string,
+    maxCellVoltage               double,
+    minCellVoltageNum            string,
+    minCellVoltage               double,
+    maxProbeTemperatureNum       string,
+    maxProbeTemperature          double,
+    minProbeTemperatureNum       string,
+    minProbeTemperature          double,
+    cellVoltage                  string comment 'double数组',
+    differenceCellVoltage        double,
+    maxTemperatureRate           double,
+    temperatureRate              string,
+    atanMaxTemperatureRate       double,
+    atanMinTemperatureRate       double,
+    averageProbeTemperature      double,
+    averageCellVoltage           double,
+    varianceCellVoltage          double,
+    varianceProbeTemperature     double,
+    entropy                      double,
+    variation                    double,
+    wDifferenceCellVoltages      string comment 'double数组',
+    wDifferenceTotalCellVoltage  double,
     differenceInternalResistance double,
-    averageModuleCellVoltages string comment 'double数组',
-    maxModuleCellVoltages  string comment 'double数组',
-    minModuleCellVoltages  string comment 'double数组',
-    maxModuleCellVoltageNums  string comment 'double数组',
-    minModuleCellVoltageNums  string comment 'double数组',
-    totalModuleCellVoltages  string comment 'double数组',
+    averageModuleCellVoltages    string comment 'double数组',
+    maxModuleCellVoltages        string comment 'double数组',
+    minModuleCellVoltages        string comment 'double数组',
+    maxModuleCellVoltageNums     string comment 'double数组',
+    minModuleCellVoltageNums     string comment 'double数组',
+    totalModuleCellVoltages      string comment 'double数组',
     differenceModuleCellVoltages string comment 'double数组',
-    instantaneousConsumption double,
-    wDischargeRate double,
-    resistance double,
-    province string,
-    city string,
-    country string,
-    vehicleType string,
-    enterprise string
-)partitioned by (year string,month string,day string)
+    instantaneousConsumption     double,
+    wDischargeRate               double,
+    resistance                   double,
+    province                     string,
+    city                         string,
+    country                      string,
+    vehicleType                  string,
+    enterprise                   string
+) partitioned by (year string,month string,day string)
     row format delimited fields terminated by '\t'
         collection items terminated by ','
         map keys terminated by ':'
@@ -229,21 +230,27 @@ create external table dwd_preprocess_vehicle_data
 
 create external table batterypack_exception_es
 (
-    province string,
-    vehicle_type  string,
+    province     string,
+    vehicle_type string,
     vol_diff_exception
-        struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
+                 struct<Q3 :double,Q2 :double,Q1 :double,maxvalue :double,minvalue :double,vehicles
+                        :array<struct<vin:string,outliers:double>>>,
     temper_rate_exception
-        struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
+                 struct<Q3 :double,Q2 :double,Q1 :double,maxvalue :double,minvalue :double,vehicles
+                        :array<struct<vin:string,outliers:double>>>,
     temper_exception
-        struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
+                 struct<Q3 :double,Q2 :double,Q1 :double,maxvalue :double,minvalue :double,vehicles
+                        :array<struct<vin:string,outliers:double>>>,
     temper_diff_exception
-        struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
+                 struct<Q3 :double,Q2 :double,Q1 :double,maxvalue :double,minvalue :double,vehicles
+                        :array<struct<vin:string,outliers:double>>>,
     resistance_exception
-        struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
+                 struct<Q3 :double,Q2 :double,Q1 :double,maxvalue :double,minvalue :double,vehicles
+                        :array<struct<vin:string,outliers:double>>>,
     discharge_rate_exception
-        struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-    dt string
+                 struct<Q3 :double,Q2 :double,Q1 :double,maxvalue :double,minvalue :double,vehicles
+                        :array<struct<vin:string,outliers:double>>>,
+    dt           string
 ) row format delimited fields terminated by ','
     collection items terminated by '_'
     map keys terminated by ':'
@@ -253,7 +260,20 @@ create external table batterypack_exception_es
         'es.port' = '9200'
         );
 
-
+-- 创建存储每周计算出来的每辆车的指标均值表
+create external table avg_vehicle_data_perweek
+(
+    province       string,
+    vehicleType    string,
+    vin            string,
+    diff_Voltage   double,
+    diff_temper    double,
+    temper_rate    double,
+    temper         double,
+    resistance     double,
+    wDischargeRate double
+) row format delimited fields terminated by '\t'
+    location '/warningplatform.db/dwd/avg_vehicle_data_perweek';
 
 
 

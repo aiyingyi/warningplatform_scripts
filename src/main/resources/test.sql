@@ -1,29 +1,3 @@
-create external table batterypack_exception_es
-(
-    province string,
-	vehicle_type  string,
-	vol_diff_exception
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	temper_rate_exception
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	temper_exception
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	temper_diff_exception
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	resistance_exception
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	discharge_rate_exception
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	dt string
-) row format delimited fields terminated by ','
-collection items terminated by '_'
-map keys terminated by ':'
- STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
- TBLPROPERTIES ('es.resource' = 'batterypack_exception/batterypack_exception',
-        'es.nodes' = '192.168.11.29',
-        'es.port' = '9200'
-        );
-
 
 -- 插入数据
 insert into  table batterypack_exception_es
@@ -36,25 +10,9 @@ named_struct('Q3',15.0 ,'Q2',15.0 ,'Q1',15.0,'maxvalue',15.0,'minvalue',15.0,"ve
 named_struct('Q3',15.0 ,'Q2',15.0 ,'Q1',15.0,'maxvalue',15.0,'minvalue',15.0,"vehicles",array(named_struct('vin','1515457','outliers',15.0))),
 named_struct('Q3',15.0 ,'Q2',15.0 ,'Q1',15.0,'maxvalue',15.0,'minvalue',15.0,"vehicles",array(named_struct('vin','1515457','outliers',15.0))),
 named_struct('Q3',15.0 ,'Q2',15.0 ,'Q1',15.0,'maxvalue',15.0,'minvalue',15.0,"vehicles",array(named_struct('vin','1515457','outliers',15.0))),
-'2020-02-12'
+'2020-02-12';
 
 ----------------------------------------------------------------------------------------------------------
-create external table exception_test_es
-(
-    province string,
-	vehicle_type  string,
-	cellvol_diff_exception,
-	struct<Q3:double ,Q2:double ,Q1:double ,maxvalue:double,minvalue:double,vehicles:array<struct<vin:string,outliers:double >>>,
-	dt string
-) row format delimited fields terminated by ','
-collection items terminated by '_'
-map keys terminated by ':'
- STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
- TBLPROPERTIES ('es.resource' = 'exception_test/exception_test',
-        'es.nodes' = '192.168.11.29',
-        'es.port' = '9200'
-        );
-
 -- 2. 求箱线图数据----------------------------------------------
 with  num_rank as     -- 按照id分区，分区内按照维度值进行分区，然后再查出下一列的维度值
 (select
@@ -138,5 +96,125 @@ join Q3_info on  Q1_info.id = Q3_info.id
 join  limit_value on  limit_value.id = Q1_info.id
 )
 select * from total_info;
+
+-- 测试建表-------------------------------------------------------------------------------------------
+with
+avg_vehicle_data_perweek   as        -- 按照省份，车型计算每辆车在一周内的各个维度的均值
+(
+  select
+      province,
+      vehicleType,
+      vin,
+      round(avg(differenceCellVoltage),1)  diff_Voltage,
+      round(avg(maxProbeTemperature),1) diff_temper,
+      round(avg(maxTemperatureRate),1) temper_rate,
+      round(avg(averageProbeTemperature),1) temper,
+      round(avg(resistance),1) resistance,
+      round(avg(wDischargeRate),2) wDischargeRate
+  from test
+  group by province,vehicleType,vin
+),
+avg_data_rank as       --  按照省份，车型，计算每一个维度数据的排名以及下一行的数值。
+(
+  select
+    province,
+    vehicleType,
+    diff_Voltage,
+    lead(diff_Voltage,1, 0) over(partition by province,vehicleType order by diff_Voltage)   next_diff_vol,
+    row_number() over(partition by province,vehicleType order by diff_Voltage)   Vol_rk,
+    temper_rate,
+    lead(temper_rate,1, 0) over(partition by province,vehicleType order by temper_rate)   next_temper_rate,
+    row_number() over(partition by province,vehicleType order by temper_rate)   temper_rate_rk,
+    temper,
+    lead(temper,1, 0) over(partition by province,vehicleType order by temper)   next_temper,
+    row_number() over(partition by province,vehicleType order by temper)   temper_rk,
+    diff_temper,
+    lead(diff_temper,1, 0) over(partition by province,vehicleType order by diff_temper)   next_diff_temper,
+    row_number() over(partition by province,vehicleType order by diff_temper)   diff_temper_rk,
+    resistance,
+    lead(resistance,1, 0) over(partition by province,vehicleType order by resistance)   next_resistance,
+    row_number() over(partition by province,vehicleType order by resistance)   resistance_rk,
+    wDischargeRate,
+    lead(wDischargeRate,1, 0) over(partition by province,vehicleType order by wDischargeRate)   next_wDischargeRate,
+    row_number() over(partition by province,vehicleType order by wDischargeRate)   wDischargeRate_rk
+  from  avg_vehicle_data_perweek
+),
+particle_location as    -- 计算各个四分位数的位置
+(
+    select
+        province,
+        vehicleType,
+        cast(3*(count(*) + 1) / 4 as int) as q3_int_part,
+        (count(*)+1)*3 / 4 % 1            as q3_float_part,
+        cast((count(*) + 1) / 2 as int)   as q2_int_part,
+        (count(*)+1) / 2 % 1              as q2_float_part,
+        cast((count(*) + 1) / 4 as int)   as q1_int_part,
+        (count(*)+1) / 4 % 1              as q1_float_part
+    from  avg_data_rank
+    group by  province,vehicleType
+),
+wDischargeRate_info as   -- 计算出温度差的箱线值
+(
+    select
+        q3.province,
+        q3.vehicleType,
+        q3.wDischargeRate_q3,
+        q2.wDischargeRate_q2,
+        q1.wDischargeRate_q1,
+        q3.wDischargeRate_q3 + q1.wDischargeRate_q1*1.5 as wDischargeRate_max_value,
+        q3.wDischargeRate_q3 - q1.wDischargeRate_q1*1.5 as wDischargeRate_min_value
+    from
+          (select
+            adr.province,
+            adr.vehicleType,
+            adr.wDischargeRate *(1-pl.q3_float_part) + adr.next_wDischargeRate * pl.q3_float_part as wDischargeRate_q3
+          from avg_data_rank adr join particle_location pl
+          on adr.province = pl.province and  adr.vehicleType = pl.vehicleType
+          and adr.wDischargeRate_rk = pl.q3_int_part) q3
+    join
+          (select
+            adr.province,
+            adr.vehicleType,
+            adr.wDischargeRate *(1-pl.q2_float_part) + adr.next_wDischargeRate * pl.q2_float_part as wDischargeRate_q2
+          from avg_data_rank adr join particle_location pl
+          on adr.province = pl.province and  adr.vehicleType = pl.vehicleType
+          and adr.wDischargeRate_rk = pl.q2_int_part) q2
+    join
+          (select
+            adr.province,
+            adr.vehicleType,
+            adr.wDischargeRate *(1-pl.q1_float_part) + adr.next_wDischargeRate * pl.q1_float_part as wDischargeRate_q1
+          from avg_data_rank adr join particle_location pl
+          on adr.province = pl.province and  adr.vehicleType = pl.vehicleType
+          and adr.wDischargeRate_rk = pl.q1_int_part) q1
+)
+select * from wDischargeRate_info
+
+
+drop table test;
+
+create table test(
+   province  string,
+   vehicleType string,
+   vin string ,
+    differenceCellVoltage double,
+    maxProbeTemperature double,
+    maxTemperatureRate double,
+    averageProbeTemperature double,
+    resistance double,
+    wDischargeRate double
+) row format delimited fields  terminated by '\t'
+
+
+insert into table test values
+("山顶","ER001","aaaaa",7,7,7,7,7,7),
+("山顶","ER001","aaaaa",15,15,15,15,15,15),
+("山顶","ER001","aaaaa",36,36,36,36,36,36),
+("山顶","ER001","aaaaa",39,39,39,39,39,39),
+("山顶","ER001","aaaaa",40,40,40,40,40,40),
+("山顶","ER001","aaaaa",41,41,41,41,41,41)
+
+
+select * from test;
 
 
