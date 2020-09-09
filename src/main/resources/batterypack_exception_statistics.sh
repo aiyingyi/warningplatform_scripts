@@ -1,16 +1,18 @@
 #!/bin/bash
 
+
 # named_struct 会把 整数直接当成int类型，从而不能插入double类型中
 
 db=warningplatform
 
-coefficient=${coefficient}
+coefficient=1.5
 
 # 获取当前日期
 do_date=`date  "+%Y-%m-%d %H:%M:%S"`
 
 
 # 计算之前应该导入前一天的数据到dwd_preprocess_vehicle_data中
+# 首先执行 ods_to_dwd_preprocess.sh 脚本，将前一天的数据导入到dwd层
 sql="
 
 insert into table  ${db}.avg_vehicle_data_perweek
@@ -79,8 +81,8 @@ diff_Voltage_info as
         q3.vol_q3,
         q2.vol_q2,
         q1.vol_q1,
-        q3.vol_q3 + q1.vol_q1*${coefficient} as vol_max_value,
-        q3.vol_q3 - q1.vol_q1*${coefficient} as vol_min_value
+        (q3.vol_q3 + q1.vol_q1*${coefficient}) as vol_max_value,
+        (q3.vol_q3 - q1.vol_q1*${coefficient}) as vol_min_value
     from
           (select
             adr.province,
@@ -116,8 +118,8 @@ temper_rate_info as
         q3.temper_rate_q3,
         q2.temper_rate_q2,
         q1.temper_rate_q1,
-        q3.temper_rate_q3 + q1.temper_rate_q1*${coefficient} as temper_rate_max_value,
-        q3.temper_rate_q3 - q1.temper_rate_q1*${coefficient} as temper_rate_min_value
+        (q3.temper_rate_q3 + q1.temper_rate_q1*${coefficient}) as temper_rate_max_value,
+        (q3.temper_rate_q3 - q1.temper_rate_q1*${coefficient}) as temper_rate_min_value
     from
           (select
             adr.province,
@@ -151,8 +153,8 @@ temper_info as
         q3.temper_q3,
         q2.temper_q2,
         q1.temper_q1,
-        q3.temper_q3 + q1.temper_q1*${coefficient} as temper_max_value,
-        q3.temper_q3 - q1.temper_q1*${coefficient} as temper_min_value
+        (q3.temper_q3 + q1.temper_q1*${coefficient}) as temper_max_value,
+        (q3.temper_q3 - q1.temper_q1*${coefficient}) as temper_min_value
     from
           (select
             adr.province,
@@ -186,8 +188,8 @@ diff_temper_info as
         q3.diff_temper_q3,
         q2.diff_temper_q2,
         q1.diff_temper_q1,
-        q3.diff_temper_q3 + q1.diff_temper_q1*${coefficient} as diff_temper_max_value,
-        q3.diff_temper_q3 - q1.diff_temper_q1*${coefficient} as diff_temper_min_value
+        (q3.diff_temper_q3 + q1.diff_temper_q1*${coefficient}) as diff_temper_max_value,
+        (q3.diff_temper_q3 - q1.diff_temper_q1*${coefficient}) as diff_temper_min_value
     from
           (select
             adr.province,
@@ -221,8 +223,8 @@ resistance_info as
         q3.resistance_q3,
         q2.resistance_q2,
         q1.resistance_q1,
-        q3.resistance_q3 + q1.resistance_q1*${coefficient} as resistance_max_value,
-        q3.resistance_q3 - q1.resistance_q1*${coefficient} as resistance_min_value
+        (q3.resistance_q3 + q1.resistance_q1*${coefficient}) as resistance_max_value,
+        (q3.resistance_q3 - q1.resistance_q1*${coefficient}) as resistance_min_value
     from
           (select
             adr.province,
@@ -256,8 +258,8 @@ wDischargeRate_info as
         q3.wDischargeRate_q3,
         q2.wDischargeRate_q2,
         q1.wDischargeRate_q1,
-        q3.wDischargeRate_q3 + q1.wDischargeRate_q1*${coefficient} as wDischargeRate_max_value,
-        q3.wDischargeRate_q3 - q1.wDischargeRate_q1*${coefficient} as wDischargeRate_min_value
+        (q3.wDischargeRate_q3 + q1.wDischargeRate_q1*${coefficient}) as wDischargeRate_max_value,
+        (q3.wDischargeRate_q3 - q1.wDischargeRate_q1*${coefficient}) as wDischargeRate_min_value
     from
           (select
             adr.province,

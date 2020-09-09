@@ -166,7 +166,7 @@ CREATE EXTERNAL TABLE risk_level_statistic_es
 create external table ods_preprocess_vehicle_data
 (
     data string
-) partitioned by (year string,month string,day string)
+) partitioned by (dt string)
     row format delimited fields terminated by '\t'
     location '/warningplatform.db/ods/ods_preprocess_vehicle_data';
 

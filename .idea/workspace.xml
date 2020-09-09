@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c0837e7e-0f8c-46f0-80bb-9c75b090cb8e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/resources/电池包异常箱线统计.sh" afterDir="false" />
+    <list default="true" id="c0837e7e-0f8c-46f0-80bb-9c75b090cb8e" name="Default Changelist" comment="箱线统计提交">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/编辑测试文档/a.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/编辑测试文档/table.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/Hive建表.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/Hive建表.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/a.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/a.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/test.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/test.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/a.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/batterypack_exception_statistics.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/table.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/ods_to_dwd_preprocess.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/test.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/编辑测试文档/test.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/每天预警统计脚本.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/warning_statistics_perday.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/每小时预警次数统计脚本.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/warning_statistics_perhour.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/电池包异常箱线统计.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/统计地图.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/province_risk_statistics.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/风险等级饼状图统计.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/risk_level_statistics.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,6 +77,9 @@
     <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\scripts\src\main\resources\编辑测试文档" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\scripts\src\main\resources\开发文档" />
       <recent name="E:\scripts\src\main\resources" />
@@ -110,7 +120,7 @@
       <workItem from="1599436640073" duration="2430000" />
       <workItem from="1599439105392" duration="12037000" />
       <workItem from="1599460394064" duration="18384000" />
-      <workItem from="1599534245050" duration="17481000" />
+      <workItem from="1599534245050" duration="29699000" />
     </task>
     <task id="LOCAL-00001" summary="脚本">
       <created>1598954475049</created>
@@ -182,7 +192,14 @@
       <option name="project" value="LOCAL" />
       <updated>1599475898059</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="箱线统计提交">
+      <created>1599559307206</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1599559307206</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -197,7 +214,8 @@
     <MESSAGE value="预警地图修改,查询所有数据" />
     <MESSAGE value="风险饼状图" />
     <MESSAGE value="箱线图" />
-    <option name="LAST_COMMIT_MESSAGE" value="箱线图" />
+    <MESSAGE value="箱线统计提交" />
+    <option name="LAST_COMMIT_MESSAGE" value="箱线统计提交" />
   </component>
   <component name="WindowStateProjectService">
     <state x="361" y="74" key="#Notifications" timestamp="1599134399660">
@@ -216,25 +234,25 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="480" y="221" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1536.824@0.0.1536.824" timestamp="1599038817389" />
-    <state x="385" y="6" key="CommitChangelistDialog2" timestamp="1599475896765">
+    <state x="385" y="6" key="CommitChangelistDialog2" timestamp="1599559884055">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="385" y="6" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1599475896765" />
+    <state x="385" y="6" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1599559884055" />
     <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1599099342132">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1599099342132" />
-    <state x="361" y="148" key="Vcs.Push.Dialog.v2" timestamp="1599475911516">
+    <state x="361" y="148" key="Vcs.Push.Dialog.v2" timestamp="1599559893268">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="361" y="148" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1599475911516" />
-    <state x="425" y="186" key="run.anything.popup" timestamp="1599530259106">
+    <state x="361" y="148" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1599559893268" />
+    <state x="425" y="186" key="run.anything.popup" timestamp="1599609416108">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="425" y="186" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1599530259106" />
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1599016310483">
+    <state x="425" y="186" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1599609416108" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1599614758826">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1599016310483" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1599614758826" />
   </component>
 </project>
