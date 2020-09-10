@@ -5,7 +5,7 @@
 db=warningplatform
 
 # 获取当前日期
-do_date=`date  "+%Y-%m-%d %H:%M:%S"`
+do_date=`date -d "1 day ago" "+%Y-%m-%d %H:%M:%S"`
 year=`date -d "${do_date}"  "+%Y"`
 month=`date -d "${do_date}"  "+%m"`
 day=`date -d "${do_date}"  "+%d"`

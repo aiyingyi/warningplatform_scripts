@@ -21,7 +21,7 @@ insert into table  ${db}.avg_vehicle_data_perweek
       vehicleType,
       vin,
       round(avg(differenceCellVoltage),1)  diff_Voltage,
-      round(avg(maxProbeTemperature-minProbeTemperature),1) diff_temper,
+      round(avg(maxProbeTemperature),1) diff_temper,
       round(avg(maxTemperatureRate),1) temper_rate,
       round(avg(averageProbeTemperature),1) temper,
       round(avg(resistance),1) resistance,

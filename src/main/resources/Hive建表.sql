@@ -275,9 +275,15 @@ create external table avg_vehicle_data_perweek
 ) row format delimited fields terminated by '\t'
     location '/warningplatform.db/dwd/avg_vehicle_data_perweek';
 
+--  创建临时车辆基本信息表,后续需要完善
+create external table vehicle_base_info
+(
+    vin string,
+    delivery_time string comment '出厂时间'
+)row format delimited fields terminated by '\t'
+    location '/warningplatform.db/dwd/vehicle_base_info';
 
-
-
+--  创建车辆分类表
 
 
 
