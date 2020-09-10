@@ -15,22 +15,20 @@ do_date=`date  "+%Y-%m-%d %H:%M:%S"`
 # 首先执行 ods_to_dwd_preprocess.sh 脚本，将前一天的数据导入到dwd层
 sql="
 
-insert into table  ${db}.avg_vehicle_data_perweek
+insert overwrite  table  ${db}.avg_vehicle_data_perweek
  select
       province,
       vehicleType,
       vin,
       round(avg(differenceCellVoltage),1)  diff_Voltage,
-      round(avg(maxProbeTemperature),1) diff_temper,
+      round(avg(maxProbeTemperature-minProbeTemperature),1) diff_temper,
       round(avg(maxTemperatureRate),1) temper_rate,
       round(avg(averageProbeTemperature),1) temper,
       round(avg(resistance),1) resistance,
       round(avg(wDischargeRate),1) wDischargeRate
   from ${db}.dwd_preprocess_vehicle_data
-  where year >= date_format(date_add(next_day('${do_date}','MO'),-14),'yyyy')
-  and year <= date_format(date_add(next_day('${do_date}','SU'),-7),'yyyy')
-  and date_format(msgTime,'yyyy-MM-dd') >= date_format(date_add(next_day('${do_date}','MO'),-14),'yyyy-MM-dd')
-  and date_format(msgTime,'yyyy-MM-dd') <= date_format(date_add(next_day('${do_date}','SU'),-7),'yyyy-MM-dd')
+  where dt >= date_format(date_add(next_day('${do_date}','MO'),-14),'yyyy-MM-dd')
+  and dt <= date_format(date_add(next_day('${do_date}','SU'),-7),'yyyy-MM-dd')
   group by province,vehicleType,vin;
 
 with

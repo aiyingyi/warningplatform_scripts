@@ -58,7 +58,6 @@ from
     from warning_stat
     join type_enterprise on warning_stat.vin = type_enterprise.vin
   ) tmp;
-
 insert into table ${db}.warning_info_statistic_es_perhour
 select
   vin,

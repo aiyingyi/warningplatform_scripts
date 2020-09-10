@@ -4,10 +4,10 @@
 # 计算之前  1. 导入前一天的数据到dwd层 2.sqoop更新一下车辆的基础信息表
 
 db=warningplatform
-coefficient=1.5
 
 # 获取当前日期,当前日期应该是本月最后一天
 do_date=`date  "+%Y-%m-%d %H:%M:%S"`
+last_month=`date  -d "${do_date} 1 month ago" "+%Y-%m"`
 first_day_this_month=`date "+%Y-%m-01"`
 # 获取上个月最后一天的日期
 start_time=`date -d "${first_day_this_month}  last day"   "+%Y-%m-%d"`
@@ -54,9 +54,8 @@ select
 from ${db}.vehicle_initial  old full outer join vehicle_ini  new
 on  old.vin = new.vin;
 
-
-with
 --  获取本月中每辆车的最后一条数据，先按照时间排名
+with
 vehicle_last_data as
 (
     select
@@ -77,17 +76,37 @@ vehicle_last_data as
           where dt>='${start_time}' and dt < '${do_date}'
       ) as vehicle_data_rk
     where vehicle_data_rk.rk = 1
-)
-
+),
 -- 表连接,对每辆车进行分类
+classify_this_month  as
+(
+  select
+      last.vin,
+      concat_ws('-',last.province,last.vehicleType,date_format(base.delivery_time,'yyyy'),ini.quarter,cast(last.odo_level as string)) as classification,
+      date_format('${start_time}','yyyy-MM') as dt
+  from  vehicle_last_data  last join  ${db}.vehicle_initial as ini
+  on last.vin = ini.vin
+  join  ${db}.vehicle_base_info  base
+  on last.vin = base.vin
+),
+-- 获取上一个月的分类情况
+classify_last_month  as
+(
+  select
+    vin,
+    classification
+  from   ${db}.vehicle_classification
+  where dt = '${last_month}'
+)
+-- 计算当月的新分类，注意：本月没有的车辆按照上个月的进行分类
+insert into table  ${db}.vehicle_classification partition(dt)
 select
-    last.vin,
-    concat_ws('-',last.province,last.vehicleType,date_format(base.delivery_time,'yyyy'),ini.quarter,cast(last.odo_level as string) ) as classification,
-    date_format('${start_time}','yyyy-MM') as dt
-from  vehicle_last_data  last join  ${db}.vehicle_initial as ini
-on last.vin = ini.vin
-join  ${db}.vehicle_base_info  base
-on last.vin = base.vin;
+  nvl(new.vin,old.vin),
+  nvl(new.classification,old.classification),
+  date_format('${start_time}','yyyy-MM') as dt
+from  classify_this_month  as new  full outer join  classify_last_month  as old
+on new.vin = old.vin;
+
 
 "
 hive -e  "${sql}"

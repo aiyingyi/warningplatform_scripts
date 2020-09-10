@@ -5,15 +5,11 @@
 db=warningplatform
 
 # 获取当前日期
-do_date=`date -d "1 day ago" "+%Y-%m-%d %H:%M:%S"`
-year=`date -d "${do_date}"  "+%Y"`
-month=`date -d "${do_date}"  "+%m"`
-day=`date -d "${do_date}"  "+%d"`
+do_date=`date -d "1 day ago" "+%Y-%m-%d"`
 
 # 计算之前应该导入前一天的数据到dwd_preprocess_vehicle_data中
 sql="
-
-insert into table ${db}.dwd_preprocess_vehicle_data partition(year='${year}',month='${month}',day='${day}')
+insert into table ${db}.dwd_preprocess_vehicle_data partition(dt='${do_date}')
 select
     get_json_object(data,'$.vin'),
     get_json_object(data,'$.msgTime'),
@@ -62,7 +58,7 @@ select
     get_json_object(data,'$.vehicleType'),
     get_json_object(data,'$.enterprise')
 from ${db}.ods_preprocess_vehicle_data
-where dt = date_format('${do_date}','yyyy-MM-dd');
+where dt = '${do_date}';
 "
 hive -e  "${sql}"
 

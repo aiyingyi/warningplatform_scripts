@@ -220,7 +220,7 @@ create external table dwd_preprocess_vehicle_data
     country                      string,
     vehicleType                  string,
     enterprise                   string
-) partitioned by (year string,month string,day string)
+) partitioned by (dt string)
     row format delimited fields terminated by '\t'
         collection items terminated by ','
         map keys terminated by ':'
@@ -282,8 +282,21 @@ create external table vehicle_base_info
     delivery_time string comment '出厂时间'
 )row format delimited fields terminated by '\t'
     location '/warningplatform.db/dwd/vehicle_base_info';
+-- 车辆最初使用时间
+create external table vehicle_initial
+(
+    vin string,
+    quarter string comment '车辆最初使用季度'
+)row format delimited fields terminated by '\t'
+    location '/warningplatform.db/dwd/vehicle_initial';
 
---  创建车辆分类表
+--  创建车辆分类表,每月统计一次
+create external table vehicle_classification(
+    vin string,
+    classification string
+)partitioned by  (dt string)
+ row format delimited fields terminated by '\t'
+location '/warningplatform.db/dwd/vehicle_classification';
 
 
 

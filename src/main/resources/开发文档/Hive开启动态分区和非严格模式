@@ -1,0 +1,7 @@
+1. 开启非严格模式
+hive-site.xml 的 Hive 客户端高级配置代码段（安全阀）
+添加配置
+hive.exec.dynamic.partition.modet=nonstrict
+2. 开启动态分区
+hive-site.xml 的 Hive 服务高级配置代码段（安全阀）
+hive.exec.dynamic.partition=true
