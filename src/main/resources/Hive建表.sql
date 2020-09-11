@@ -278,25 +278,50 @@ create external table avg_vehicle_data_perweek
 --  创建临时车辆基本信息表,后续需要完善
 create external table vehicle_base_info
 (
-    vin string,
+    vin           string,
     delivery_time string comment '出厂时间'
-)row format delimited fields terminated by '\t'
+) row format delimited fields terminated by '\t'
     location '/warningplatform.db/dwd/vehicle_base_info';
 -- 车辆最初使用时间
 create external table vehicle_initial
 (
-    vin string,
+    vin     string,
     quarter string comment '车辆最初使用季度'
-)row format delimited fields terminated by '\t'
+) row format delimited fields terminated by '\t'
     location '/warningplatform.db/dwd/vehicle_initial';
 
 --  创建车辆分类表,每月统计一次
-create external table vehicle_classification(
-    vin string,
+create external table vehicle_classification
+(
+    vin            string,
     classification string
-)partitioned by  (dt string)
- row format delimited fields terminated by '\t'
-location '/warningplatform.db/dwd/vehicle_classification';
+) partitioned by (dt string)
+    row format delimited fields terminated by '\t'
+    location '/warningplatform.db/dwd/vehicle_classification';
+
+-- 创建预警模型统计es映射表，记录每一周不同车类别的箱线值
+
+CREATE EXTERNAL TABLE warning_boxplot_es
+(
+    vin                   string,
+    chargeMaxVolDiff      double,
+    unchargeMaxVolDiff    double,
+    chargeMaxTemperRate   double,
+    unchargeMaxTemperRate double,
+    chargeMaxTemper       double,
+    unchargeMaxTemper     double,
+    chargeMaxTemperDiff   double,
+    unchargeMaxTemperDiff double,
+    chargeMinResistance   double,
+    unchargeMinResistance double,
+    dt                    string
+)
+    STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/warning_boxplot_es'
+    TBLPROPERTIES ('es.resource' = 'warningboxplot/warningboxplot',
+        'es.nodes' = '192.168.11.29',
+        'es.port' = '9200'
+        );
 
 
 

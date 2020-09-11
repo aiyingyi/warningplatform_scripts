@@ -323,10 +323,8 @@ from
     where dt = '${last_month}' ) as c
 left  join  box_plot as b
 on c.classification = b.classification
+
+
+
 "
 hive -e  "${sql}"
-
-
-
-
-
