@@ -1,330 +1,118 @@
 #!/bin/bash
 
-# 每周执行一次，统计每一周分类的箱线值
-# 1. 执行之前，执行数据导入脚本，将前一天的数据导入到dwd层
+# 车辆分类脚本，每月执行一次，每月最后一天执行，数据统计范围为上个月最后一天到本月最后一天之前
+# 计算之前  1. 导入前一天的数据到dwd层 2.sqoop更新一下车辆的基础信息表
 
 db=warningplatform
-coefficient=1.5
 
-# 定义充电状态变量
-uncharge=0
-charge=1
-
-# 获取当前日期,当前日期应该是本周周一
+# 获取当前日期,当前日期应该是本月最后一天
 do_date=`date  "+%Y-%m-%d %H:%M:%S"`
+last_month=`date  -d "${do_date} 1 month ago" "+%Y-%m"`   8月份
+first_day_this_month=`date "+%Y-%m-01"`
+# 获取上个月最后一天的日期
+start_time=`date -d "${first_day_this_month}  last day"   "+%Y-%m-%d"`  8月31
 
-# 获取上周周末的日期
-last_sunday=`date -d "last sunday" "+%Y-%m-%d"`
 
-# 获取上周周末的上个月
-last_month=`date  -d "${last_sunday}  1 month ago" "+%Y-%m"`
-
+# 1. 缺少sqoop脚本，更新基础信息表中的数据
+# 2. 计算车辆的最初使用季度
 sql="
 with
-vehicle_data as
+--  获取这个月的车辆数据，根据vin分区，按照行车里程进行排序
+vehicle_rk as
 (
     select
-        dwd_data.vin,
-        dwd_data.chargeStatus,
-        dwd_data.differenceCellVoltage,
-        dwd_data.maxTemperatureRate,
-        dwd_data.maxProbeTemperature,
-        dwd_data.minProbeTemperature,
-        dwd_data.resistance,
-        c.classification
-    from
-        (select        -- 获取上周的车辆dwd数据
-            vin,
-            chargeStatus,
-            differenceCellVoltage,
-            maxTemperatureRate,
-            maxProbeTemperature,
-            minProbeTemperature,
-            resistance
-        from ${db}.dwd_preprocess_vehicle_data
-        where dt >= date_format(date_add(next_day('${do_date}','MO'),-14),'yyyy-MM-dd')
-        and   dt <= date_format(date_add(next_day('${do_date}','SU'),-7),'yyyy-MM-dd')
-        ) as dwd_data
-    join
-        (select        -- 获取上个月的车辆分类
-            vin,
-            classification
-        from  ${db}.vehicle_classification
-        where dt = '${last_month}'
-        ) as c
-    on dwd_data.vin = c.vin
+        vin,
+        cast(date_format(msgTime,'MM') as int)  month,
+        odo,
+        row_number() over(partition by vin order by odo asc)  rk
+    from ${db}.dwd_preprocess_vehicle_data
+    where dt>='${start_time}' and dt < '${do_date}'
 ),
-avg_data_perweek as     -- 计算每周车辆在不同工况下的平均值
+-- 计算每一辆车的初始使用季度
+vehicle_ini as
 (
     select
-      vin,
-      chargeStatus,
-      classification,
-      round(avg(differenceCellVoltage),1)  diff_voltage,
-      round(avg(maxTemperatureRate),1) temper_rate,
-      round(avg(maxProbeTemperature),1) temper,
-      round(avg(maxProbeTemperature-minProbeTemperature),1) diff_temper,
-      round(avg(resistance),1) resistance
-    from vehicle_data
-    group by  vin,chargeStatus,classification
-),
-particle_location as    -- 计算不同车类不同工况的分位位置
-(
+        vin,
+        case
+        when month>=3 and month <=5 then 'spring'
+        when month>=6 and month <=8 then 'summer'
+        when month>=9 and month <=11 then 'automn'
+        else 'winter' end  as quarter
+    from vehicle_rk   where rk = 1 and vehicle_rk.odo <= 1
+    union all
     select
-      classification,
-      chargeStatus,
-      cast(3*(count(vin) + 1) / 4 as int) as q3_int_part,
-      (count(vin)+1)*3 / 4 % 1            as q3_float_part,
-      cast((count(vin) + 1) / 4 as int)   as q1_int_part,
-      (count(vin)+1) / 4 % 1              as q1_float_part
-    from  avg_data_perweek
-    group by  classification,chargeStatus
-),
-avg_data_rank  as       -- 计算平均数据的不同车类不同工况的各个维度的排名
-(
-    select
-        classification,
-        chargeStatus,
-        diff_voltage,
-        lead(diff_voltage,1, 0) over(partition by classification,chargeStatus order by diff_voltage)   next_diff_vol,
-        row_number() over(partition by classification,chargeStatus order by diff_voltage)   vol_rk,
-        temper_rate,
-        lead(temper_rate,1, 0) over(partition by classification,chargeStatus order by temper_rate)   next_temper_rate,
-        row_number() over(partition by classification,chargeStatus order by temper_rate)   temper_rate_rk,
-        temper,
-        lead(temper,1, 0) over(partition by classification,chargeStatus order by temper)   next_temper,
-        row_number() over(partition by classification,chargeStatus order by temper)   temper_rk,
-        diff_temper,
-        lead(diff_temper,1, 0) over(partition by classification,chargeStatus order by diff_temper)   next_diff_temper,
-        row_number() over(partition by classification,chargeStatus order by diff_temper)   diff_temper_rk,
-        resistance,
-        lead(resistance,1, 0) over(partition by classification,chargeStatus order by resistance)   next_resistance,
-        row_number() over(partition by classification,chargeStatus order by resistance)   resistance_rk
-    from avg_data_perweek
-),
-diff_voltage_info as      -- 按类别，工况去计算压差的箱线指标
-(
-    select
-        q3.classification,
-        q3.chargeStatus,
-        (q3.vol_q3 + q1.vol_q1* ${coefficient}) as vol_max_value
-    from
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.diff_voltage * (1-lo.q3_float_part) + data_rk.next_diff_vol* lo.q3_float_part  as vol_q3
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.vol_rk = lo.q3_int_part
-      )  as q3
-    join
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.diff_voltage * (1-lo.q1_float_part) + data_rk.next_diff_vol* lo.q1_float_part  as vol_q1
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.vol_rk = lo.q1_int_part
-      )  as q1
-    on q3.classification = q1.classification
-    and q3.chargeStatus = q1.chargeStatus
-),
-temper_rate_info as      -- 按类别，工况去计算temper_rate的箱线指标
-(
-    select
-        q3.classification,
-        q3.chargeStatus,
-        (q3.temper_rate_q3 + q1.temper_rate_q1* ${coefficient}) as  temper_rate_max_value
-    from
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.temper_rate * (1-lo.q3_float_part) + data_rk.next_temper_rate* lo.q3_float_part  as  temper_rate_q3
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.temper_rate_rk = lo.q3_int_part
-      )  as q3
-    join
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.temper_rate * (1-lo.q1_float_part) + data_rk.next_temper_rate * lo.q1_float_part  as temper_rate_q1
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.temper_rate_rk = lo.q1_int_part
-      )  as q1
-    on q3.classification = q1.classification
-    and q3.chargeStatus = q1.chargeStatus
-),
-temper_info as      -- 按类别，工况去计算temper的箱线指标
-(
-    select
-        q3.classification,
-        q3.chargeStatus,
-        (q3.temper_q3 + q1.temper_q1* ${coefficient}) as  temper_max_value
-    from
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.temper * (1-lo.q3_float_part) + data_rk.next_temper * lo.q3_float_part  as  temper_q3
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.temper_rk = lo.q3_int_part
-      )  as q3
-    join
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.temper * (1-lo.q1_float_part) + data_rk.next_temper* lo.q1_float_part  as  temper_q1
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.temper_rk = lo.q1_int_part
-      )  as q1
-    on q3.classification = q1.classification
-    and q3.chargeStatus = q1.chargeStatus
-),
-diff_temper_info as      -- 按类别，工况去计算diff_temper的箱线指标
-(
-    select
-        q3.classification,
-        q3.chargeStatus,
-        (q3.diff_temper_q3 + q1.diff_temper_q1* ${coefficient}) as  diff_temper_max_value
-    from
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.diff_temper * (1-lo.q3_float_part) + data_rk.next_diff_temper* lo.q3_float_part  as  diff_temper_q3
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.diff_temper_rk = lo.q3_int_part
-      )  as q3
-    join
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.diff_temper * (1-lo.q1_float_part) + data_rk.next_diff_temper* lo.q1_float_part  as  diff_temper_q1
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.diff_temper_rk = lo.q1_int_part
-      )  as q1
-    on q3.classification = q1.classification
-    and q3.chargeStatus = q1.chargeStatus
-),
-resistance_info as      -- 按类别，工况去计算resistance的箱线指标
-(
-    select
-        q3.classification,
-        q3.chargeStatus,
-        (q3.resistance_q3 - q1.resistance_q1* ${coefficient}) as  resistance_min_value
-    from
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.resistance * (1-lo.q3_float_part) + data_rk.next_resistance * lo.q3_float_part  as  resistance_q3
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.resistance_rk = lo.q3_int_part
-      )  as q3
-    join
-      (select
-        data_rk.classification,
-        data_rk.chargeStatus,
-        data_rk.resistance * (1-lo.q1_float_part) + data_rk.next_resistance * lo.q1_float_part  as  resistance_q1
-      from avg_data_rank  data_rk  join particle_location lo
-      on  data_rk.classification = lo.classification
-      and data_rk.chargeStatus = lo.chargeStatus
-      and data_rk.resistance_rk = lo.q1_int_part
-    ) as q1
-    on q3.classification = q1.classification
-    and q3.chargeStatus = q1.chargeStatus
-),
-mixed_box_plot as       --  按照类别，工况将所有维度的数据连接在一起
-(
-    select
-        vo.classification,
-        vo.chargeStatus,
-        vo.vol_max_value,
-        rate.temper_rate_max_value,
-        temp.temper_max_value,
-        diff.diff_temper_max_value,
-        res.resistance_min_value
-    from  diff_voltage_info  vo join  temper_rate_info rate
-    on vo.classification = rate.classification
-    and vo.chargeStatus = rate.chargeStatus
-    join temper_info  temp
-    on vo.classification = temp.classification
-    and vo.chargeStatus = temp.chargeStatus
-    join diff_temper_info  diff
-    on vo.classification = diff.classification
-    and vo.chargeStatus = diff.chargeStatus
-    join resistance_info  res
-    on vo.classification = res.classification
-    and vo.chargeStatus = res.chargeStatus
-),
-box_plot as      -- 将同一类型的不同工况组合到一条记录中
-(
-    select
-        charge.classification,
-        charge.vol_max_value as ch_vol,
-        uncharge.vol_max_value as unch_vol,
-        charge.temper_rate_max_value  as ch_temper_rate,
-        uncharge.temper_rate_max_value  as unch_temper_rate,
-        charge.temper_max_value  as ch_temper,
-        uncharge.temper_max_value  as unch_temper,
-        charge.diff_temper_max_value  as ch_diff_temper,
-        uncharge.diff_temper_max_value  as unch_diff_temper,
-        charge.resistance_min_value  as ch_resistance,
-        uncharge.resistance_min_value  as unch_resistance
-    from    (select
-                classification,
-                vol_max_value,
-                temper_rate_max_value,
-                temper_max_value,
-                diff_temper_max_value,
-                resistance_min_value
-            from  mixed_box_plot where chargeStatus = '${charge}') as charge
-    join    (select
-                classification,
-                vol_max_value,
-                temper_rate_max_value,
-                temper_max_value,
-                diff_temper_max_value,
-                resistance_min_value
-            from  mixed_box_plot where chargeStatus = '${uncharge}') as uncharge
-    on  charge.classification = uncharge.classification
+        vin,
+        'none' as quarter
+    from vehicle_rk   where rk = 1 and vehicle_rk.odo > 1
 )
 
--- 将每辆车对应类型的各个维度的箱线指标写入es
-insert into table ${db}.warning_boxplot_es
+--  更新车辆最初使用时间表
+insert overwrite table ${db}.vehicle_initial
 select
-  c.vin,
-  round(b.ch_vol,1) ,
-  round(b.unch_vol,1),
-  round(b.ch_temper_rate,1),
-  round(b.unch_temper_rate,1),
-  round(b.ch_temper,1),
-  round(b.unch_temper,1),
-  round(b.ch_diff_temper,1),
-  round(b.unch_diff_temper,1),
-  round(b.ch_resistance,1),
-  round(b.unch_resistance,1),
-  date_format(date_add(next_day('${do_date}','MO'),-14),'yyyy-MM-dd')
-from
-    (select vin,classification from  ${db}.vehicle_classification
-    where dt = '${last_month}' ) as c
-left  join  box_plot as b
-on c.classification = b.classification
+    if(old.vin is null,new.vin,old.vin),
+    if(old.vin is null,new.quarter,old.quarter)
+from ${db}.vehicle_initial  old full outer join vehicle_ini  new
+on  old.vin = new.vin;
+
+--  获取本月中每辆车的最后一条数据，先按照时间排名
+with
+vehicle_last_data as
+(
+    select
+      vehicle_data_rk.vin,
+      vehicle_data_rk.province,
+      vehicle_data_rk.vehicleType,
+      cast(vehicle_data_rk.odo/10000 as int) as odo_level
+    from
+      (
+          select
+              vin,
+              province,
+              vehicleType,
+              odo,
+              msgTime,
+              row_number() over(partition by vin order by msgTime desc) as rk
+          from ${db}.dwd_preprocess_vehicle_data
+          where dt>='${start_time}' and dt < '${do_date}'
+      ) as vehicle_data_rk
+    where vehicle_data_rk.rk = 1
+),
+-- 表连接,对每辆车进行分类
+classify_this_month  as
+(
+  select
+      last.vin,
+      concat_ws('-',last.province,last.vehicleType,date_format(base.delivery_time,'yyyy'),ini.quarter,cast(last.odo_level as string)) as classification,
+      date_format('${start_time}','yyyy-MM') as dt
+  from  vehicle_last_data  last join  ${db}.vehicle_initial as ini
+  on last.vin = ini.vin
+  join  ${db}.vehicle_base_info  base
+  on last.vin = base.vin
+),
+-- 获取上一个月的分类情况
+classify_last_month  as
+(
+  select
+    vin,
+    classification
+  from   ${db}.vehicle_classification
+  where dt = '${last_month}'
+)
+-- 计算当月的新分类，注意：本月没有的车辆按照上个月的进行分类
+insert into table  ${db}.vehicle_classification partition(dt)
+select
+  nvl(new.vin,old.vin),
+  nvl(new.classification,old.classification),
+  date_format('${do_date}','yyyy-MM') as dt
+from  classify_this_month  as new  full outer join  classify_last_month  as old
+on new.vin = old.vin;
+
+
 "
 hive -e  "${sql}"
+
+
+
 
 
 

@@ -51,6 +51,7 @@ create external table battery_warning_info_es
     review_result      string,
     review_user        string
 ) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/battery_warning_info_es'
     TBLPROPERTIES ('es.resource' = 'warning/warning',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200'
@@ -99,6 +100,7 @@ CREATE EXTERNAL TABLE warning_info_statistic_es_perhour
     dt           string comment '本次统计范围的开始整点'
 )
     STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/warning_info_statistic_es_perhour'
     TBLPROPERTIES ('es.resource' = 'warninginfo_statistic_perhour/warninginfo_statistic_perhour',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200',
@@ -119,6 +121,7 @@ CREATE EXTERNAL TABLE warning_info_statistic_es_perday
     dt           string comment '统计数据的日期'
 )
     STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/warning_info_statistic_es_perday'
     TBLPROPERTIES ('es.resource' = 'warninginfo_statistic_perday/warninginfo_statistic_perday',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200',
@@ -255,6 +258,7 @@ create external table batterypack_exception_es
     collection items terminated by '_'
     map keys terminated by ':'
     STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/batterypack_exception_es'
     TBLPROPERTIES ('es.resource' = 'batterypack_exception/batterypack_exception',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200'
