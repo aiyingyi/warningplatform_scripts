@@ -222,7 +222,8 @@ create external table dwd_preprocess_vehicle_data
     city                         string,
     country                      string,
     vehicleType                  string,
-    enterprise                   string
+    enterprise                   string,
+    totalCurrent                 string
 ) partitioned by (dt string)
     row format delimited fields terminated by '\t'
         collection items terminated by ','

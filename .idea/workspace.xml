@@ -2,13 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c0837e7e-0f8c-46f0-80bb-9c75b090cb8e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/adc/ChargeMonitor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/adc/ShellRPC.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/wait.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/adc/hive/Particle.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/vehicle_classify.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/vehicle_classify.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/warning_boxplot_statistics.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/warning_boxplot_statistics.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/Hive建表.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/init_hive.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/ods_to_dwd_preprocess.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/ods_to_dwd_preprocess.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/编辑测试文档/a.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/编辑测试文档/a.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -153,7 +151,8 @@
       <workItem from="1599460394064" duration="18384000" />
       <workItem from="1599534245050" duration="96448000" />
       <workItem from="1599821116591" duration="121000" />
-      <workItem from="1600041897327" duration="11236000" />
+      <workItem from="1600041897327" duration="13972000" />
+      <workItem from="1600077638903" duration="187000" />
     </task>
     <task id="LOCAL-00001" summary="脚本">
       <created>1598954475049</created>
@@ -267,7 +266,14 @@
       <option name="project" value="LOCAL" />
       <updated>1599821199840</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="kafka监控，多线程，脚本调用">
+      <created>1600073065898</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1600073065898</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,7 +292,8 @@
     <MESSAGE value="箱线统计修改" />
     <MESSAGE value="车辆分类完成" />
     <MESSAGE value="完成预警每周箱线指标统计" />
-    <option name="LAST_COMMIT_MESSAGE" value="完成预警每周箱线指标统计" />
+    <MESSAGE value="kafka监控，多线程，脚本调用" />
+    <option name="LAST_COMMIT_MESSAGE" value="kafka监控，多线程，脚本调用" />
   </component>
   <component name="WindowStateProjectService">
     <state x="361" y="74" key="#Notifications" timestamp="1599134399660">
@@ -317,30 +324,30 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="553" y="300" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages/0.0.1536.824@0.0.1536.824" timestamp="1600072573138" />
-    <state x="385" y="6" key="CommitChangelistDialog2" timestamp="1599821198701">
+    <state x="385" y="6" key="CommitChangelistDialog2" timestamp="1600073064124">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="385" y="6" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1599821198701" />
+    <state x="385" y="6" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1600073064124" />
     <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1600072198484">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1600072198484" />
-    <state width="1493" height="194" key="GridCell.Tab.0.bottom" timestamp="1600069861667">
+    <state width="1493" height="9" key="GridCell.Tab.0.bottom" timestamp="1600077149083">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="194" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1600069861667" />
-    <state width="1493" height="194" key="GridCell.Tab.0.center" timestamp="1600069861667">
+    <state width="1493" height="9" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1600077149083" />
+    <state width="1493" height="9" key="GridCell.Tab.0.center" timestamp="1600077149083">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="194" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1600069861667" />
-    <state width="1493" height="194" key="GridCell.Tab.0.left" timestamp="1600069861667">
+    <state width="1493" height="9" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1600077149083" />
+    <state width="1493" height="9" key="GridCell.Tab.0.left" timestamp="1600077149083">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="194" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1600069861667" />
-    <state width="1493" height="194" key="GridCell.Tab.0.right" timestamp="1600069861667">
+    <state width="1493" height="9" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1600077149083" />
+    <state width="1493" height="9" key="GridCell.Tab.0.right" timestamp="1600077149083">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="194" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1600069861667" />
+    <state width="1493" height="9" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1600077149083" />
     <state x="272" y="57" key="SettingsEditor" timestamp="1599635331991">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -353,13 +360,13 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="178" y="116" key="new project wizard/0.0.1536.824@0.0.1536.824" timestamp="1600072534535" />
-    <state x="425" y="186" width="672" height="677" key="run.anything.popup" timestamp="1600069625453">
+    <state x="425" y="186" width="672" height="677" key="run.anything.popup" timestamp="1600073483866">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="425" y="186" width="672" height="677" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1600069625453" />
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1599614758826">
+    <state x="425" y="186" width="672" height="677" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1600073483866" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1600073849521">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1599614758826" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1600073849521" />
   </component>
 </project>
