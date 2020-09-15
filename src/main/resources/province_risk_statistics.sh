@@ -6,31 +6,32 @@ do_date=`date  "+%Y-%m-%d %H:%M:%S"`
 
 sql="
 with
+-- 按照企业，省份，风险等级来统计未审核的风险个数
 warning as
 (select
+      enterprise,
       province,
       risk_level,
       count(*) total
     from ${db}.battery_warning_info_es
     where review_status = '1' or review_status = '2' or review_status = '3'
-    group by province,risk_level ),
-tmp as
-(select warning.*
-  from warning
-  distribute by warning.province
-  sort by warning.province,warning.risk_level),
+    group by enterprise,province,risk_level
+),
+
 
 warning_level as
 (select
-    tmp.province,
-    case tmp.risk_level when '1' then tmp.total else 0 end r1,
-    case tmp.risk_level when '2' then tmp.total else 0 end r2,
-    case tmp.risk_level when '3' then tmp.total else 0 end r3
-from tmp
+    warning.enterprise,
+    warning.province,
+    case warning.risk_level when '1' then warning.total else 0 end r1,
+    case warning.risk_level when '2' then warning.total else 0 end r2,
+    case warning.risk_level when '3' then warning.total else 0 end r3
+from warning
 )
 
 insert into table ${db}.province_warning_statistic_es
 select
+  warning_level.enterprise,
   warning_level.province,
   sum(warning_level.r1) r1,
   sum(warning_level.r2) r2,
@@ -38,7 +39,7 @@ select
   0,
   date_format('${do_date}','yyyy-MM-dd HH:mm:ss')
 from warning_level
-group by warning_level.province
+group by warning_level.enterprise,warning_level.province;
 "
 hive -e  "${sql}"
 

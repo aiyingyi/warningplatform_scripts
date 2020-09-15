@@ -6,18 +6,21 @@ do_date=`date  "+%Y-%m-%d %H:%M:%S"`
 
 sql="
 with
+-- 按照企业，风险等级去统计每种风险等级的数量
 risk_stat as
 (
     select
+      enterprise,
       risk_level,
       count(*) total
     from ${db}.battery_warning_info_es
     where review_status = '1' or review_status = '2' or review_status = '3'
-    group by risk_level
+    group by enterprise,risk_level
 ),
 tmp as
 (
     select
+        risk_stat.enterprise,
         risk_stat.risk_level,
         case risk_stat.risk_level when '1' then risk_stat.total else 0 end r1,
         case risk_stat.risk_level when '2' then risk_stat.total else 0 end r2,
@@ -26,6 +29,7 @@ tmp as
 )
 insert into table ${db}.risk_level_statistic_es
 select
+    tmp.enterprise,
     sum(tmp.r1),
     sum(tmp.r2),
     sum(tmp.r3),

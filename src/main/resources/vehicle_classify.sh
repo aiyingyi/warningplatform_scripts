@@ -21,10 +21,11 @@ with
 vehicle_rk as
 (
     select
+        enterprise,
         vin,
         cast(date_format(msgTime,'MM') as int)  month,
         odo,
-        row_number() over(partition by vin order by odo asc)  rk
+        row_number() over(partition by enterprise,vin order by odo desc)  rk
     from ${db}.dwd_preprocess_vehicle_data
     where dt>='${start_time}' and dt < '${do_date}'
 ),
@@ -32,6 +33,7 @@ vehicle_rk as
 vehicle_ini as
 (
     select
+        enterprise,
         vin,
         case
         when month>=3 and month <=5 then 'spring'
@@ -41,6 +43,7 @@ vehicle_ini as
     from vehicle_rk   where rk = 1 and vehicle_rk.odo <= 1
     union all
     select
+        enterprise,
         vin,
         'none' as quarter
     from vehicle_rk   where rk = 1 and vehicle_rk.odo > 1
@@ -49,6 +52,7 @@ vehicle_ini as
 --  更新车辆最初使用时间表
 insert overwrite table ${db}.vehicle_initial
 select
+    if(old.vin is null,new.enterprise,old.enterprise),
     if(old.vin is null,new.vin,old.vin),
     if(old.vin is null,new.quarter,old.quarter)
 from ${db}.vehicle_initial  old full outer join vehicle_ini  new
@@ -59,6 +63,7 @@ with
 vehicle_last_data as
 (
     select
+      vehicle_data_rk.enterprise,
       vehicle_data_rk.vin,
       vehicle_data_rk.province,
       vehicle_data_rk.vehicleType,
@@ -66,12 +71,13 @@ vehicle_last_data as
     from
       (
           select
+              enterprise,
               vin,
               province,
               vehicleType,
               odo,
               msgTime,
-              row_number() over(partition by vin order by msgTime desc) as rk
+              row_number() over(partition by enterprise,vin order by msgTime desc) as rk
           from ${db}.dwd_preprocess_vehicle_data
           where dt>='${start_time}' and dt < '${do_date}'
       ) as vehicle_data_rk
@@ -81,6 +87,7 @@ vehicle_last_data as
 classify_this_month  as
 (
   select
+      last.enterprise,
       last.vin,
       concat_ws('-',last.province,last.vehicleType,date_format(base.delivery_time,'yyyy'),ini.quarter,cast(last.odo_level as string)) as classification,
       date_format('${start_time}','yyyy-MM') as dt
@@ -93,6 +100,7 @@ classify_this_month  as
 classify_last_month  as
 (
   select
+    enterprise,
     vin,
     classification
   from   ${db}.vehicle_classification
@@ -101,12 +109,12 @@ classify_last_month  as
 -- 计算当月的新分类，注意：本月没有的车辆按照上个月的进行分类
 insert into table  ${db}.vehicle_classification partition(dt)
 select
+  nvl(new.enterprise,old.enterprise),
   nvl(new.vin,old.vin),
   nvl(new.classification,old.classification),
   date_format('${do_date}','yyyy-MM') as dt
 from  classify_this_month  as new  full outer join  classify_last_month  as old
 on new.vin = old.vin;
-
 
 "
 hive -e  "${sql}"

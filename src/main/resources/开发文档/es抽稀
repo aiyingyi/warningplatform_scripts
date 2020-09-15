@@ -33,3 +33,37 @@ GET  test/test/_search
     }
   }
 }
+
+
+
+GET his_vehicle_data_20200913/_search
+{
+    "size":0,
+    "_source":false,
+    "aggs":{
+        "group_by_time":{
+            "date_histogram":{
+                "field":"msgTime",
+                "interval":"1h"
+            },
+            "aggs":{
+                "details":{
+                    "top_hits":{
+                        "size":1,
+                        "_source":[
+                            "name",
+                            "msgTime"
+                        ],
+                        "sort":[
+                            {
+                                "msgTime":{
+                                    "order":"desc"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

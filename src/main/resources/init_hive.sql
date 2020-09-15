@@ -133,6 +133,7 @@ CREATE EXTERNAL TABLE warning_info_statistic_es_perday
 
 CREATE EXTERNAL TABLE province_warning_statistic_es
 (
+    enterprise   string,
     province     string,
     highrisk_num bigint comment '高风险未审核预警数量',
     medrisk_num  bigint,
@@ -151,6 +152,7 @@ CREATE EXTERNAL TABLE province_warning_statistic_es
 -- 创建风险等级统计表es映射表，每隔一小时统计所有未审核的数据
 CREATE EXTERNAL TABLE risk_level_statistic_es
 (
+    enterprise   string,
     highrisk_num bigint,
     medrisk_num  bigint,
     lowrisk_num  bigint,
@@ -234,6 +236,7 @@ create external table dwd_preprocess_vehicle_data
 
 create external table batterypack_exception_es
 (
+    enterprise   string,
     province     string,
     vehicle_type string,
     vol_diff_exception
@@ -268,6 +271,7 @@ create external table batterypack_exception_es
 -- 创建存储每周计算出来的每辆车的指标均值表
 create external table avg_vehicle_data_perweek
 (
+    enterprise     string,
     province       string,
     vehicleType    string,
     vin            string,
@@ -290,14 +294,16 @@ create external table vehicle_base_info
 -- 车辆最初使用时间
 create external table vehicle_initial
 (
-    vin     string,
-    quarter string comment '车辆最初使用季度'
+    enterprise string,
+    vin        string,
+    quarter    string comment '车辆最初使用季度'
 ) row format delimited fields terminated by '\t'
     location '/warningplatform.db/dwd/vehicle_initial';
 
 --  创建车辆分类表,每月统计一次
 create external table vehicle_classification
 (
+    enterprise     string,
     vin            string,
     classification string
 ) partitioned by (dt string)
@@ -308,6 +314,7 @@ create external table vehicle_classification
 
 CREATE EXTERNAL TABLE warning_boxplot_es
 (
+    enterprise            string,
     vin                   string,
     chargeMaxVolDiff      double,
     unchargeMaxVolDiff    double,

@@ -56,7 +56,9 @@ preprocess_vehicle_data as
       get_json_object(data,'$.city'),
       get_json_object(data,'$.country'),
       get_json_object(data,'$.vehicleType'),
-      get_json_object(data,'$.enterprise')
+      get_json_object(data,'$.enterprise'),
+      get_json_object(data,'$.totalCurrent'),
+      get_json_object(data,'$.soc')
   from ${db}.ods_preprocess_vehicle_data
   where dt = '${do_date}';
 )

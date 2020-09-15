@@ -11,6 +11,7 @@ partition_year=`date -d "${start_time}" "+%Y"`
 
 # 2. 使用动态分区，按照省份和预警类型计算过去一小时的故障次数，按天进行分区写入到统计表中
 sql="
+-- 从es导入上一小时的预警数据
 insert overwrite table  ${db}.battery_warning_info_perhour
 select
   vin,
