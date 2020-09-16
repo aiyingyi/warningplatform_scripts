@@ -166,7 +166,7 @@ CREATE EXTERNAL TABLE risk_level_statistic_es
         );
 
 
--- 创建预处理之后ods层数据帧原始数据表
+-- 创建预处理之后ods层数据帧原始数据表,按照日期进行分区
 
 create external table ods_preprocess_vehicle_data
 (
@@ -334,8 +334,71 @@ CREATE EXTERNAL TABLE warning_boxplot_es
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200'
         );
+-- 创建故障信息es映射表
+create external table failure_es
+(
+    enterprise       string,
+    vin              string,
+    vehicleType      string,
+    province         string,
+    failureType      string,
+    failureStartTime string,
+    failureEndTime   string
+)
+    STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/dwd/failure_es'
+    TBLPROPERTIES ('es.resource' = 'failure/failure',
+        'es.nodes' = '192.168.11.29',
+        'es.port' = '9200'
+        );
+
+-- 创建故障信息每小时统计es映射表
+create external table failure_statistics_perhour_es
+(
+    enterprise  string,
+    province    string,
+    vehicleType string,
+    vin         string,
+    failureType string,
+    total       bigint,
+    dt          string
+)
+    STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/failure_statistics_perhour_es'
+    TBLPROPERTIES ('es.resource' = 'failure_statistics_perhour/failure_statistics_perhour',
+        'es.nodes' = '192.168.11.29',
+        'es.port' = '9200'
+        );
+
+-- 创建故障信息每小时统计表,按照日期分区
+create external table failure_statistics_perhour
+(
+    enterprise  string,
+    province    string,
+    vehicleType string,
+    vin         string,
+    failureType string,
+    total       bigint,
+    dt          string
+) partitioned by (day string)
+    row format delimited fields terminated by '\t'
+    location '/warningplatform.db/ads/failure_statistics_perhour';
 
 
-
-
-
+-- 创建故障信息每天统计es映射表
+create external table failure_statistics_perday_es
+(
+    enterprise  string,
+    province    string,
+    vehicleType string,
+    vin         string,
+    failureType string,
+    total       bigint,
+    dt          string
+)
+    STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/failure_statistics_perday_es'
+    TBLPROPERTIES ('es.resource' = 'failure_statistics_perday/failure_statistics_perday',
+        'es.nodes' = '192.168.11.29',
+        'es.port' = '9200'
+        );
