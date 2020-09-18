@@ -288,7 +288,8 @@ create external table avg_vehicle_data_perweek
 create external table vehicle_base_info
 (
     vin           string,
-    delivery_time string comment '出厂时间'
+    delivery_time string comment '出厂时间',
+    licensePlate  string
 ) row format delimited fields terminated by '\t'
     location '/warningplatform.db/dwd/vehicle_base_info';
 -- 车辆最初使用时间
@@ -399,6 +400,37 @@ create external table failure_statistics_perday_es
     STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
     location '/warningplatform.db/ads/failure_statistics_perday_es'
     TBLPROPERTIES ('es.resource' = 'failure_statistics_perday/failure_statistics_perday',
+        'es.nodes' = '192.168.11.29',
+        'es.port' = '9200'
+        );
+-- 创建初始最高/低电压单体频次表,创建后需要导入ini_vol_cell_frequency_data.txt中的数据
+create table ini_vol_cell_frequency
+(
+    cellVoltageNum string,
+    frequency      bigint
+) row format delimited fields terminated by '\t'
+    location '/warningplatform.db/dwd/ini_vol_cell_frequency';
+
+
+-- 创建充电记录es映射表
+create external table charge_record_es
+(
+    enterprise             string,
+    vehicleType            string,
+    vin                    string,
+    licensePlate           string,
+    chargeStartTime        string,
+    chargeEndTime          string,
+    chargeStartSOC         double,
+    chargeEndSOC           double,
+    chargeElectricity      double,
+    chargeType             string,
+    maxVolCellNumfrequency array<bigint>,
+    minVolCellNumfrequency array<bigint>
+)
+    STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler'
+    location '/warningplatform.db/ads/charge_record_es'
+    TBLPROPERTIES ('es.resource' = 'charge_record/charge_record',
         'es.nodes' = '192.168.11.29',
         'es.port' = '9200'
         );

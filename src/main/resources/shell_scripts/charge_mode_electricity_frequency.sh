@@ -18,6 +18,24 @@ sql="
 
 with
 -- 获取车辆充电时间内的原始数据
+preprocess_vehicle_data0 as
+(
+  select
+      get_json_object(data,'$.vin') vin,
+      get_json_object(data,'$.msgTime') msgTime,
+      get_json_object(data,'$.maxCellVoltageNum') maxCellVoltageNum,
+      get_json_object(data,'$.minCellVoltageNum') minCellVoltageNum,
+      get_json_object(data,'$.vehicleType') vehicleType,
+      get_json_object(data,'$.enterprise') enterprise,
+      get_json_object(data,'$.totalCurrent') totalCurrent,
+      get_json_object(data,'$.soc') soc
+  from ${db}.ods_preprocess_vehicle_data where dt>=date_format('${start_time}','yyyy-MM-dd')
+  and dt<=date_format('${end_time}','yyyy-MM-dd')      --根据日期分区查找数据
+  and get_json_object(data,'$.msgTime') >= '${start_time}'
+  and get_json_object(data,'$.msgTime') <= '${end_time}'
+  and get_json_object(data,'$.vin') = '${vin}'
+-- and get_json_object(data,'$.chargeStatus') = '${charge}'   匹配充电状态？
+),
 -- 计算出初始数据
 preprocess_vehicle_data1 as
 (
@@ -39,7 +57,7 @@ charge_mode_electricity  as
   select
     vin,
     case when avg(totalCurrent)>= 30  or max(totalCurrent) >=70 then '${quickcharge}' else '${slowcharge}' end as  chargeType,
-    sum(timeDiff/1000 * totalCurrent) as chargeElectricity
+    sum(timeDiff/(1000*60*60 ) * totalCurrent) as chargeElectricity
   from  preprocess_vehicle_data1
   group by vin
 ),

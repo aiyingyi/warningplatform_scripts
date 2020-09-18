@@ -4,6 +4,7 @@ import ch.ethz.ssh2.ChannelCondition;
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
+import scala.annotation.meta.param;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,56 +14,46 @@ import java.nio.charset.Charset;
  * 远程调用shell脚本
  */
 
-public class ShellRPC {
+public class ShellUtil {
 
-    private static Connection conn;
-
-    private static String ip;
-
-    private static String userName;
-
-    private static String passWord;
 
     private static String charset = Charset.defaultCharset().toString();
 
     private static final int TIME_OUT = 1000 * 5 * 60;
-
-
     /**
      * 登录远程主机
      *
      * @return
      * @throws IOException
      */
-    private static boolean getConnection(String userName, String passWord, String ip, int port) throws IOException {
-        ShellRPC.ip = ip;
-        ShellRPC.userName = userName;
-        ShellRPC.passWord = passWord;
+    public static Connection getConnection(String userName, String passWord, String ip, int port) throws IOException {
 
-        conn = new Connection(ip, port);
+        Connection conn = new Connection(ip, port);
         conn.connect();
-        return conn.authenticateWithPassword(userName, passWord);
+        if (conn.authenticateWithPassword(userName, passWord)) {
+            return conn;
+        } else
+            return null;
     }
 
     /**
      * 执行脚本
      *
-     * @param cmds
+     * @param cmd
      * @return
      * @throws Exception
      */
-    public static int exec(String cmds) throws Exception {
+    public static int exec(Connection conn, String cmd) throws Exception {
         InputStream stdOut = null;
         InputStream stdErr = null;
         String outStr = "";
         String outErr = "";
         int ret = -1;
         try {
-            if (getConnection("root", "Rfh9mZDxerOqdM4V", "192.168.11.32", 12816)) {
-                // Open a new {@link Session} on this connection
+            if (conn != null) {
                 Session session = conn.openSession();
-                // Execute a command on the remote machine.
-                session.execCommand(cmds);
+                // 执行脚本
+                session.execCommand(cmd);
 
                 stdOut = new StreamGobbler(session.getStdout());
                 outStr = processStream(stdOut, charset);
@@ -73,12 +64,9 @@ public class ShellRPC {
                 session.waitForCondition(ChannelCondition.EXIT_STATUS, TIME_OUT);
                 ret = session.getExitStatus();
             } else {
-                throw new Exception("登录远程机器失败" + ip); // 自定义异常类 实现略
+                throw new Exception("登录远程机器失败");
             }
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
             stdOut.close();
             stdErr.close();
         }
@@ -91,6 +79,7 @@ public class ShellRPC {
      * @return
      * @throws Exception
      */
+
     private static String processStream(InputStream in, String charset) throws Exception {
         byte[] buf = new byte[1024];
         StringBuilder sb = new StringBuilder();

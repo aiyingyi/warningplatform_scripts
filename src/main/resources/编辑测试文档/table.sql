@@ -1,3 +1,21 @@
+#!/bin/bash
+
+db=warningplatform
+
+# 充电开始，结束时间
+start_time=$1
+end_time=$2
+vin=$3
+
+# 定义快充和慢充
+slowcharge=0
+quickcharge=1
+# 定义充电状态
+charge=1
+
+
+sql="
+
 with
 -- 获取车辆充电时间内的原始数据
 preprocess_vehicle_data0 as
@@ -5,7 +23,6 @@ preprocess_vehicle_data0 as
   select
       get_json_object(data,'$.vin') vin,
       get_json_object(data,'$.msgTime') msgTime,
-      get_json_object(data,'$.chargeStatus') chargeStatus,
       get_json_object(data,'$.maxCellVoltageNum') maxCellVoltageNum,
       get_json_object(data,'$.minCellVoltageNum') minCellVoltageNum,
       get_json_object(data,'$.vehicleType') vehicleType,
@@ -13,10 +30,11 @@ preprocess_vehicle_data0 as
       get_json_object(data,'$.totalCurrent') totalCurrent,
       get_json_object(data,'$.soc') soc
   from ${db}.ods_preprocess_vehicle_data where dt>=date_format('${start_time}','yyyy-MM-dd')
-  and dt<=date_format('${end_time}','yyyy-MM-dd')      --根据分区获取数据
+  and dt<=date_format('${end_time}','yyyy-MM-dd')      --根据日期分区查找数据
   and get_json_object(data,'$.msgTime') >= '${start_time}'
   and get_json_object(data,'$.msgTime') <= '${end_time}'
-  and get_json_object(data,'$.vin') = '${vin}' --  and get_json_object(data,'$.chargeStatus') = '${charge}'   匹配充电状态？
+  and get_json_object(data,'$.vin') = '${vin}'
+-- and get_json_object(data,'$.chargeStatus') = '${charge}'   匹配充电状态？
 ),
 -- 计算出初始数据
 preprocess_vehicle_data1 as
@@ -50,7 +68,7 @@ maxvol_cell_frequency as
 (
     select
       tmp.vin,
-        (
+      collect_list(
           tmp.max1,tmp.max2,tmp.max3,tmp.max4,tmp.max5,tmp.max6,tmp.max7,tmp.max8,tmp.max9,tmp.max10,
           tmp.max11,tmp.max12,tmp.max13,tmp.max14,tmp.max15,tmp.max16,tmp.max17,tmp.max18,tmp.max19,tmp.max20,
           tmp.max21,tmp.max22,tmp.max23,tmp.max24,tmp.max25,tmp.max26,tmp.max27,tmp.max28,tmp.max29,tmp.max30,
@@ -267,8 +285,25 @@ maxvol_cell_frequency as
             count(maxCellVoltageNum) as total
             from  preprocess_vehicle_data0
             group by vin,maxCellVoltageNum) as max_vol_num ) as  maxvol
-      ) as tmp
+    ) as tmp
+)
+
+cell_vol_frequency as
+(
 
 )
 
-select * from maxvol_cell_frequency;
+
+
+
+
+"
+hive -e  "${sql}"
+
+
+
+
+
+
+
+
